@@ -1,6 +1,5 @@
 const apiUrl = "https://ws.audioscrobbler.com/2.0/?format=json";
 
-
 function getData(url, getAllPages = false)
 {
     var options = {
@@ -17,7 +16,7 @@ function getData(url, getAllPages = false)
     // Retrieve page count, if instructed
     var pageObj = Object.values(JSON.parse(data[0]));
     var totalPages = pageObj[0]["@attr"]["totalPages"];
-    for (let page = 2; page < totalPages; page++)
+    for (let page = 2; page <= totalPages; page++)
     {
         var pageUrl = url + `&page=${page}`;
         data.push(UrlFetchApp.fetch(pageUrl, options).getContentText());
@@ -45,124 +44,266 @@ function collateArrays(path, objects)
     return outArray;
 }
 
+////////////////////////////////////////////////////
+
 function retrieveProfile(config)
 {
     // Set request URL
     var url = `${apiUrl}&method=user.getInfo&` +
-        `user=${config.username}&api_key=${config.api_key}`;
+        `user=${config.username}&api_key=${config.apiKey}`;
 
-    var profileData = common.prettyPrintJsonStr(getData(url));
+    // Request the data, and extract the values
+    var data = getData(url);
+    data = JSON.parse(data).user;
 
-    // Save to backup folder
-    common.updateOrCreateFile(config.backupDir, config.username + ".json", profileData);
+    // Save raw/JSON data to backup folder
+    if (config.outputFormat.includes("rawJson") ||
+        config.outputFormat.includes("json"))
+    {
+        var profileData = JSON.stringify(data, null, 4);
+        common.updateOrCreateFile(config.backupDir, config.username + ".json", profileData);
+    }
 }
 
 function retrieveFriends(config)
 {
     // Set request URL
     var url = `${apiUrl}&method=user.getFriends&limit=200&` +
-        `user=${config.username}&api_key=${config.api_key}`;
+        `user=${config.username}&api_key=${config.apiKey}`;
 
-    var friendsData = common.prettyPrintJsonStr(getData(url, true));
+    // Request the data, and extract the values
+    var data = getData(url, true);
 
     // Fold array of responses into single structure
-    // friendsData = collateArrays("friends.user", friendsData);
+    data = collateArrays("friends.user", data);
 
-    // Save to backup folder
-    common.updateOrCreateFile(config.backupDir, "friends.json", friendsData);
+    // Save raw/JSON data to backup folder
+    if (config.outputFormat.includes("rawJson") ||
+        config.outputFormat.includes("json"))
+    {
+        var friendsData = JSON.stringify(data, null, 4);
+        common.updateOrCreateFile(config.backupDir, "friends.json", friendsData);
+    }
 }
 
 function retrieveLovedTracks(config)
 {
     // Set request URL
-    var url = `${apiUrl}&method=user.getLovedTracks&limit=200&` +
-        `user=${config.username}&api_key=${config.api_key}`;
+    var url = `${apiUrl}&method=user.getLovedTracks&limit=2&` +
+        `user=${config.username}&api_key=${config.apiKey}`;
 
-    var lovedTracksData = common.prettyPrintJsonStr(getData(url, true));
+    // Request the data, and extract the values
+    var data = getData(url, true);
 
     // Fold array of responses into single structure
-    lovedTracksData = collateArrays("lovedtracks.track", lovedTracksData);
+    data = collateArrays("lovedtracks.track", data);
 
-    // TODO Parse track data into a more useful format
+    // Save raw data to backup folder
+    if (config.outputFormat.includes("rawJson"))
+    {
+        var rawData = JSON.stringify(data, null, 4);
+        common.updateOrCreateFile(config.backupDir, "lovedTracks.raw.json", rawData);
+    }
+
+    // Parse track data into a more useful format
+    var filteredData = data.map(function(track)
+    {
+        return {
+            date: track.date.uts,
+            track: track.name,
+            artist: track.artist.name,
+        };
+    });
 
     // Save to backup folder
-    common.updateOrCreateFile(config.backupDir, "lovedTracks.json", lovedTracksData);
+    if (config.outputFormat.includes("json"))
+    {
+        var prettyData = JSON.stringify(filteredData, null, 4);
+        common.updateOrCreateFile(config.backupDir, "lovedTracks.json", prettyData);
+    }
 }
 
 function retrieveTopTracks(config)
 {
     // Set request URL
     var url = `${apiUrl}&method=user.getTopTracks&period=overall&limit=200&` +
-        `user=${config.username}&api_key=${config.api_key}`;
+        `user=${config.username}&api_key=${config.apiKey}`;
 
-    var topTracksData = common.prettyPrintJsonStr(getData(url));
+    // Request the data, and extract the values
+    var data = getData(url);
 
-    // TODO Parse track data into a more useful format
+    // Save raw data to backup folder
+    if (config.outputFormat.includes("rawJson"))
+    {
+        var rawData = common.prettyPrintJsonStr(data);
+        common.updateOrCreateFile(config.backupDir, "topTracks.raw.json", rawData);
+    }
+
+    // Parse track data into a more useful format
+    var filteredData = JSON.parse(data).toptracks.track.map(function(track)
+    {
+        return {
+            track: track.name,
+            artist: track.artist.name,
+            playcount: track.playcount,
+        };
+    });
 
     // Save to backup folder
-    common.updateOrCreateFile(config.backupDir, "topTracks.json", topTracksData);
+    if (config.outputFormat.includes("json"))
+    {
+        var prettyData = JSON.stringify(filteredData, null, 4);
+        common.updateOrCreateFile(config.backupDir, "topTracks.json", prettyData);
+    }
 }
 
 function retrieveTopArtists(config)
 {
     // Set request URL
     var url = `${apiUrl}&method=user.getTopArtists&period=overall&limit=200&` +
-        `user=${config.username}&api_key=${config.api_key}`;
+        `user=${config.username}&api_key=${config.apiKey}`;
 
-    var topArtistsData = common.prettyPrintJsonStr(getData(url));
+    // Request the data, and extract the values
+    var data = getData(url);
 
-    // TODO Parse artist data into a more useful format
+    // Save raw data to backup folder
+    if (config.outputFormat.includes("rawJson"))
+    {
+        var rawData = common.prettyPrintJsonStr(data);
+        common.updateOrCreateFile(config.backupDir, "topArtists.raw.json", rawData);
+    }
+
+    // Parse track data into a more useful format
+    var filteredData = JSON.parse(data).topartists.artist.map(function(artist)
+    {
+        return {
+            artist: artist.name,
+            playcount: artist.playcount,
+        };
+    });
 
     // Save to backup folder
-    common.updateOrCreateFile(config.backupDir, "topArtists.json", topArtistsData);
+    if (config.outputFormat.includes("json"))
+    {
+        var prettyData = JSON.stringify(filteredData, null, 4);
+        common.updateOrCreateFile(config.backupDir, "topArtists.json", prettyData);
+    }
 }
 
 function retrieveTopAlbums(config)
 {
     // Set request URL
     var url = `${apiUrl}&method=user.getTopAlbums&period=overall&limit=200&` +
-        `user=${config.username}&api_key=${config.api_key}`;
+        `user=${config.username}&api_key=${config.apiKey}`;
 
-    var topAlbumsData = common.prettyPrintJsonStr(getData(url));
+    // Request the data, and extract the values
+    var data = getData(url);
 
-    // TODO Parse album data into a more useful format
+    // Save raw data to backup folder
+    if (config.outputFormat.includes("rawJson"))
+    {
+        var rawData = common.prettyPrintJsonStr(data);
+        common.updateOrCreateFile(config.backupDir, "topAlbums.raw.json", rawData);
+    }
+
+    // Parse track data into a more useful format
+    var filteredData = JSON.parse(data).topalbums.album.map(function(album)
+    {
+        return {
+            album: album.name,
+            artist: album.artist.name,
+            playcount: album.playcount,
+        };
+    });
 
     // Save to backup folder
-    common.updateOrCreateFile(config.backupDir, "topAlbums.json", topAlbumsData);
+    if (config.outputFormat.includes("json"))
+    {
+        var prettyData = JSON.stringify(filteredData, null, 4);
+        common.updateOrCreateFile(config.backupDir, "topAlbums.json", prettyData);
+    }
 }
 
 function retrieveTopTags(config)
 {
     // Set request URL
     var url = `${apiUrl}&method=user.getTopTags&limit=200&` +
-        `user=${config.username}&api_key=${config.api_key}`;
+        `user=${config.username}&api_key=${config.apiKey}`;
 
-    var topTagsData = common.prettyPrintJsonStr(getData(url));
+    // Request the data, and extract the values
+    var data = getData(url);
+
+    // Save raw data to backup folder
+    if (config.outputFormat.includes("rawJson"))
+    {
+        var rawData = common.prettyPrintJsonStr(data);
+        common.updateOrCreateFile(config.backupDir, "topTags.raw.json", rawData);
+    }
+
+    // Parse track data into a more useful format
+    var filteredData = JSON.parse(data).toptags.tag.map(function(tag)
+    {
+        return {
+            tag: tag.name,
+            count: tag.count,
+        };
+    });
 
     // Save to backup folder
-    common.updateOrCreateFile(config.backupDir, "topTags.json", topTagsData);
+    if (config.outputFormat.includes("json"))
+    {
+        var prettyData = JSON.stringify(filteredData, null, 4);
+        common.updateOrCreateFile(config.backupDir, "topTags.json", prettyData);
+    }
 }
 
 function retrieveScrobbles(config)
 {
     // Setup request URL
     var url = `${apiUrl}&method=user.getRecentTracks&limit=200&` +
-        `user=${config.username}&api_key=${config.api_key}`;
+        `user=${config.username}&api_key=${config.apiKey}`;
 
 
-    var scrobblesData = common.prettyPrintJsonStr(getData(url, true));
+    // Request the data, and extract the values
+    var data = getData(url, true);
 
     // Fold array of responses into single structure
-    scrobblesData = collateArrays("recenttracks.track", collateArrays);
+    data = collateArrays("recenttracks.track", data);
 
-    // TODO Parse track data into a more useful format
+    // Save raw data to backup folder
+    if (config.outputFormat.includes("rawJson"))
+    {
+        var rawData = JSON.stringify(data, null, 4);
+        common.updateOrCreateFile(config.backupDir, "scrobbles.raw.json", rawData);
+    }
+
+    // Parse track data into a more useful format
+    var filteredData = data.map(function(track)
+    {
+        return {
+            date: track.date.uts,
+            track: track.name,
+            artist: track.artist["#text"],
+            album: track.album["#text"],
+        };
+    });
 
     // Save to backup folder
-    common.updateOrCreateFile(config.backupDir, "scrobbles.json", scrobblesData);
+    if (config.outputFormat.includes("json"))
+    {
+        var prettyData = JSON.stringify(filteredData, null, 4);
+        common.updateOrCreateFile(config.backupDir, "scrobbles.json", prettyData);
+    }
 }
 
 function main()
 {
+    // Don't do anything if there's no output formats
+    if (config.outputFormat.length < 1)
+    {
+        return;
+    }
+
     // Retrieve profile info
     retrieveProfile(config);
 
@@ -179,5 +320,5 @@ function main()
     retrieveTopTags(config);
 
     // Retrieve all scrobbles
-    // retrieveScrobbles(config);
+    retrieveScrobbles(config);
 }
