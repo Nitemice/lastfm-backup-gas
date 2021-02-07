@@ -46,7 +46,7 @@ function collateArrays(path, objects)
 
 ////////////////////////////////////////////////////
 
-function retrieveProfile(config)
+function retrieveProfile()
 {
     // Set request URL
     var url = `${apiUrl}&method=user.getInfo&` +
@@ -65,7 +65,7 @@ function retrieveProfile(config)
     }
 }
 
-function retrieveFriends(config)
+function retrieveFriends()
 {
     // Set request URL
     var url = `${apiUrl}&method=user.getFriends&limit=200&` +
@@ -86,7 +86,7 @@ function retrieveFriends(config)
     }
 }
 
-function retrieveLovedTracks(config)
+function retrieveLovedTracks()
 {
     // Set request URL
     var url = `${apiUrl}&method=user.getLovedTracks&limit=2&` +
@@ -105,25 +105,25 @@ function retrieveLovedTracks(config)
         common.updateOrCreateFile(config.backupDir, "lovedTracks.raw.json", rawData);
     }
 
-    // Parse track data into a more useful format
-    var filteredData = data.map(function(track)
-    {
-        return {
-            date: track.date.uts,
-            track: track.name,
-            artist: track.artist.name,
-        };
-    });
-
-    // Save to backup folder
     if (config.outputFormat.includes("json"))
     {
+        // Parse track data into a more useful format
+        var filteredData = data.map(function(track)
+        {
+            return {
+                date: track.date.uts,
+                track: track.name,
+                artist: track.artist.name,
+            };
+        });
+
+        // Save to backup folder
         var prettyData = JSON.stringify(filteredData, null, 4);
         common.updateOrCreateFile(config.backupDir, "lovedTracks.json", prettyData);
     }
 }
 
-function retrieveTopTracks(config)
+function retrieveTopTracks()
 {
     // Set request URL
     var url = `${apiUrl}&method=user.getTopTracks&period=overall&limit=200&` +
@@ -139,25 +139,25 @@ function retrieveTopTracks(config)
         common.updateOrCreateFile(config.backupDir, "topTracks.raw.json", rawData);
     }
 
-    // Parse track data into a more useful format
-    var filteredData = JSON.parse(data).toptracks.track.map(function(track)
-    {
-        return {
-            track: track.name,
-            artist: track.artist.name,
-            playcount: track.playcount,
-        };
-    });
-
-    // Save to backup folder
     if (config.outputFormat.includes("json"))
     {
+        // Parse track data into a more useful format
+        var filteredData = JSON.parse(data).toptracks.track.map(function(track)
+        {
+            return {
+                track: track.name,
+                artist: track.artist.name,
+                playcount: track.playcount,
+            };
+        });
+    
+        // Save to backup folder
         var prettyData = JSON.stringify(filteredData, null, 4);
         common.updateOrCreateFile(config.backupDir, "topTracks.json", prettyData);
     }
 }
 
-function retrieveTopArtists(config)
+function retrieveTopArtists()
 {
     // Set request URL
     var url = `${apiUrl}&method=user.getTopArtists&period=overall&limit=200&` +
@@ -172,25 +172,25 @@ function retrieveTopArtists(config)
         var rawData = common.prettyPrintJsonStr(data);
         common.updateOrCreateFile(config.backupDir, "topArtists.raw.json", rawData);
     }
-
-    // Parse track data into a more useful format
-    var filteredData = JSON.parse(data).topartists.artist.map(function(artist)
-    {
-        return {
-            artist: artist.name,
-            playcount: artist.playcount,
-        };
-    });
-
-    // Save to backup folder
+    
     if (config.outputFormat.includes("json"))
     {
+        // Parse track data into a more useful format
+        var filteredData = JSON.parse(data).topartists.artist.map(function(artist)
+        {
+            return {
+                artist: artist.name,
+                playcount: artist.playcount,
+            };
+        });
+
+        // Save to backup folder
         var prettyData = JSON.stringify(filteredData, null, 4);
         common.updateOrCreateFile(config.backupDir, "topArtists.json", prettyData);
     }
 }
 
-function retrieveTopAlbums(config)
+function retrieveTopAlbums()
 {
     // Set request URL
     var url = `${apiUrl}&method=user.getTopAlbums&period=overall&limit=200&` +
@@ -206,25 +206,25 @@ function retrieveTopAlbums(config)
         common.updateOrCreateFile(config.backupDir, "topAlbums.raw.json", rawData);
     }
 
-    // Parse track data into a more useful format
-    var filteredData = JSON.parse(data).topalbums.album.map(function(album)
-    {
-        return {
-            album: album.name,
-            artist: album.artist.name,
-            playcount: album.playcount,
-        };
-    });
-
-    // Save to backup folder
     if (config.outputFormat.includes("json"))
     {
+        // Parse track data into a more useful format
+        var filteredData = JSON.parse(data).topalbums.album.map(function(album)
+        {
+            return {
+                album: album.name,
+                artist: album.artist.name,
+                playcount: album.playcount,
+            };
+        });
+
+        // Save to backup folder
         var prettyData = JSON.stringify(filteredData, null, 4);
         common.updateOrCreateFile(config.backupDir, "topAlbums.json", prettyData);
     }
 }
 
-function retrieveTopTags(config)
+function retrieveTopTags()
 {
     // Set request URL
     var url = `${apiUrl}&method=user.getTopTags&limit=200&` +
@@ -240,24 +240,24 @@ function retrieveTopTags(config)
         common.updateOrCreateFile(config.backupDir, "topTags.raw.json", rawData);
     }
 
-    // Parse track data into a more useful format
-    var filteredData = JSON.parse(data).toptags.tag.map(function(tag)
-    {
-        return {
-            tag: tag.name,
-            count: tag.count,
-        };
-    });
-
-    // Save to backup folder
     if (config.outputFormat.includes("json"))
     {
+        // Parse track data into a more useful format
+        var filteredData = JSON.parse(data).toptags.tag.map(function(tag)
+        {
+            return {
+                tag: tag.name,
+                count: tag.count,
+            };
+        });
+
+        // Save to backup folder
         var prettyData = JSON.stringify(filteredData, null, 4);
         common.updateOrCreateFile(config.backupDir, "topTags.json", prettyData);
     }
 }
 
-function retrieveScrobbles(config)
+function retrieveScrobbles()
 {
     // Setup request URL
     var url = `${apiUrl}&method=user.getRecentTracks&limit=200&` +
@@ -277,20 +277,20 @@ function retrieveScrobbles(config)
         common.updateOrCreateFile(config.backupDir, "scrobbles.raw.json", rawData);
     }
 
-    // Parse track data into a more useful format
-    var filteredData = data.map(function(track)
-    {
-        return {
-            date: track.date.uts,
-            track: track.name,
-            artist: track.artist["#text"],
-            album: track.album["#text"],
-        };
-    });
-
-    // Save to backup folder
     if (config.outputFormat.includes("json"))
     {
+        // Parse track data into a more useful format
+        var filteredData = data.map(function(track)
+        {
+            return {
+                date: track.date.uts,
+                track: track.name,
+                artist: track.artist["#text"],
+                album: track.album["#text"],
+            };
+        });
+
+        // Save to backup folder
         var prettyData = JSON.stringify(filteredData, null, 4);
         common.updateOrCreateFile(config.backupDir, "scrobbles.json", prettyData);
     }
@@ -305,20 +305,20 @@ function main()
     }
 
     // Retrieve profile info
-    retrieveProfile(config);
+    retrieveProfile();
 
     // Retrieve friends
-    retrieveFriends(config);
+    retrieveFriends();
 
     // Retrieve loved tracks
-    retrieveLovedTracks(config);
+    retrieveLovedTracks();
 
     // Retrieve top 200 tracks/artists/albums/tags
-    retrieveTopTracks(config);
-    retrieveTopArtists(config);
-    retrieveTopAlbums(config);
-    retrieveTopTags(config);
+    retrieveTopTracks();
+    retrieveTopArtists();
+    retrieveTopAlbums();
+    retrieveTopTags();
 
     // Retrieve all scrobbles
-    retrieveScrobbles(config);
+    retrieveScrobbles();
 }
