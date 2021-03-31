@@ -14,8 +14,10 @@ periodically via GAS triggers. For more info on setting up GAS triggers, see
 [this Google Apps Script guide](https://developers.google.com/apps-script/guides/triggers).
 
 The script includes a function to export each data type, such as
-`retrieveLovedTracks()`, which can be run directly.
-To export all user data, simply run the `main()` function.
+`retrieveLovedTracks()`, which can be run directly. It also includes a few
+functions that run related exports together, such as `getFaves()`, which will
+export all the top data, along with loved tracks. To export all user data at
+once, simply run the `main()` function.
 
 ## Setup
 

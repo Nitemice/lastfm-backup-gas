@@ -296,6 +296,27 @@ function retrieveScrobbles()
     }
 }
 
+function getPersonalInfo()
+{
+    // Retrieve profile info
+    retrieveProfile();
+
+    // Retrieve friends
+    retrieveFriends();
+}
+
+function getFaves()
+{
+    // Retrieve top 200 tracks/artists/albums/tags
+    retrieveTopTracks();
+    retrieveTopArtists();
+    retrieveTopAlbums();
+    retrieveTopTags();
+
+    // Retrieve loved tracks
+    retrieveLovedTracks();
+}
+
 function main()
 {
     // Don't do anything if there's no output formats
@@ -304,20 +325,8 @@ function main()
         return;
     }
 
-    // Retrieve profile info
-    retrieveProfile();
-
-    // Retrieve friends
-    retrieveFriends();
-
-    // Retrieve loved tracks
-    retrieveLovedTracks();
-
-    // Retrieve top 200 tracks/artists/albums/tags
-    retrieveTopTracks();
-    retrieveTopArtists();
-    retrieveTopAlbums();
-    retrieveTopTags();
+    getPersonalInfo();
+    getFaves();
 
     // Retrieve all scrobbles
     retrieveScrobbles();
