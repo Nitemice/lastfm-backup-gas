@@ -282,8 +282,21 @@ function retrieveScrobbles()
         // Parse track data into a more useful format
         var filteredData = data.map(function(track)
         {
+            var date;
+            // Tracks that are currently playing don't have a date,
+            // so we just have to grab a timestamp for now
+            if (track["date"] == undefined &&
+                track["@attr"] !== undefined && track["@attr"]["nowplaying"])
+            {
+                date = Math.floor(Date.now()/ 1000).toString();
+            }
+            else
+            {
+                date = track.date.uts;
+            }
+
             return {
-                date: track.date.uts,
+                date: date,
                 track: track.name,
                 artist: track.artist["#text"],
                 album: track.album["#text"],
