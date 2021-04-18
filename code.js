@@ -150,7 +150,7 @@ function retrieveTopTracks()
                 playcount: track.playcount,
             };
         });
-    
+
         // Save to backup folder
         var prettyData = JSON.stringify(filteredData, null, 4);
         common.updateOrCreateFile(config.backupDir, "topTracks.json", prettyData);
@@ -172,7 +172,7 @@ function retrieveTopArtists()
         var rawData = common.prettyPrintJsonStr(data);
         common.updateOrCreateFile(config.backupDir, "topArtists.raw.json", rawData);
     }
-    
+
     if (config.outputFormat.includes("json"))
     {
         // Parse track data into a more useful format
@@ -288,7 +288,7 @@ function retrieveScrobbles()
             if (track["date"] == undefined &&
                 track["@attr"] !== undefined && track["@attr"]["nowplaying"])
             {
-                date = Math.floor(Date.now()/ 1000).toString();
+                date = Math.floor(Date.now() / 1000).toString();
             }
             else
             {

@@ -54,7 +54,7 @@ const config = {
     * `rawJson` - JSON data, direct from the Last.fm API, containing all
         fields.
     * `json` - JSON data, filtered to contain only essential fields.
-- `backupDir`: The ID of the Google Drive directory, where exported maps
+- `backupDir`: The ID of the Google Drive directory, where exported data
     should be stored. This can be found by navigating to the folder, and
     grabbing the ID from the tail of the URL.
 
@@ -71,4 +71,4 @@ to upload it directly. For more information on using clasp, here is a
 
 ## Credits
 
-- Inspired by [iiiypuk/lastfm-backup](https://github.com/iiiypuk/lastfm-backup).
+Inspired by [iiiypuk/lastfm-backup](https://github.com/iiiypuk/lastfm-backup).
