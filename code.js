@@ -25,25 +25,6 @@ function getData(url, getAllPages = false)
     return data;
 }
 
-function collateArrays(path, objects)
-{
-    var outArray = [];
-    var chunks = path.split('.');
-
-    // Iterate over each object
-    for (const resp of objects)
-    {
-        var obj = JSON.parse(resp);
-        for (const chunk of chunks)
-        {
-            obj = obj[chunk];
-        }
-        outArray = outArray.concat(obj);
-    }
-
-    return outArray;
-}
-
 ////////////////////////////////////////////////////
 
 function retrieveProfile()
@@ -75,7 +56,7 @@ function retrieveFriends()
     var data = getData(url, true);
 
     // Fold array of responses into single structure
-    data = collateArrays("friends.user", data);
+    data = common.collateArrays("friends.user", data);
 
     // Save raw/JSON data to backup folder
     if (config.outputFormat.includes("rawJson") ||
@@ -96,7 +77,7 @@ function retrieveLovedTracks()
     var data = getData(url, true);
 
     // Fold array of responses into single structure
-    data = collateArrays("lovedtracks.track", data);
+    data = common.collateArrays("lovedtracks.track", data);
 
     // Save raw data to backup folder
     if (config.outputFormat.includes("rawJson"))
@@ -268,7 +249,7 @@ function retrieveScrobbles()
     var data = getData(url, true);
 
     // Fold array of responses into single structure
-    data = collateArrays("recenttracks.track", data);
+    data = common.collateArrays("recenttracks.track", data);
 
     // Save raw data to backup folder
     if (config.outputFormat.includes("rawJson"))
