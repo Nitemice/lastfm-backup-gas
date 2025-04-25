@@ -1,24 +1,15 @@
 // Common GAS Functions
-// v2.2.0 - 2021-10-04
+// v2.5.0 - 2025-04-26
 
 var common = {
 
-    // Retrieve file as JSON object
-    grabJson: function(id)
-    {
-        var file = DriveApp.getFileById(id).getAs("application/json");
-        return JSON.parse(file.getDataAsString());
-    },
-
-    // Write JSON object as string to file
-    saveJson: function(id, content)
-    {
-        var file = DriveApp.getFileById(id);
-        // Set the file contents
-        file.setContent(JSON.stringify(content));
-    },
-
-    // Get a ref to given folder, or create one if it doesn't exist
+    /**
+     * Get a reference to the given folder, or create one if it doesn't exist
+     * 
+     * @param {string} parentDir - ID of the parent directory
+     * @param {string} foldername - Name of the folder to find or create
+     * @returns {Folder}
+     */
     findOrCreateFolder: function(parentDir, foldername)
     {
         // See if there's already a folder in the indicated Google Drive folder
@@ -32,13 +23,38 @@ var common = {
         else
         {
             // Create a new folder
-            Logger.log("Created new folder: " + foldername);
+            Logger.log(`Created new folder: ${foldername}`);
             return backupFolder.createFolder(foldername);
         }
     },
 
-    // Get a ref to given file, or create one if it doesn't exist
-    findOrCreateFile: function(parentDir, filename, newContent = "")
+    /**
+     * Delete a file from a folder, if it exists
+     * 
+     * @param {string} parentDir - ID of the folder
+     * @param {string} filename - Name of the file to delete
+     */
+    deleteFile: function(parentDir, filename)
+    {
+        // See if the indicated file is in the indicated Google Drive folder
+        var folder = DriveApp.getFolderById(parentDir);
+        var files = folder.getFilesByName(filename);
+        if (files.hasNext())
+        {
+            files.next().setTrashed(true);
+            Logger.log(`Deleted file: ${filename}`);
+        }
+    },
+
+    /**
+     * Find or create a file in a given folder
+     * 
+     * @param {string} parentDir - ID of the folder
+     * @param {string} filename - Name of the file
+     * @param {string} [content=""] - Content for the new file if it's created
+     * @returns {File}
+     */
+    findOrCreateFile: function(parentDir, filename, content = "")
     {
         // See if there's already a file in the indicated Google Drive folder
         var folder = DriveApp.getFolderById(parentDir);
@@ -50,12 +66,19 @@ var common = {
         else
         {
             // Create a new empty file
-            Logger.log("Created file: " + filename);
-            return folder.createFile(filename, newContent);
+            Logger.log(`Created file: ${filename}`);
+            return folder.createFile(filename, content);
         }
     },
 
-    // Write to file, only if different to existing content
+    /**
+     * Write to file, only if different to existing content
+     * 
+     * @param {string} parentDir - ID of the folder
+     * @param {string} filename - Name of the file
+     * @param {string} content - Content to write to file
+     * @returns {File}
+     */
     updateOrCreateFile: function(parentDir, filename, content)
     {
         var file = common.findOrCreateFile(parentDir, filename);
@@ -65,25 +88,102 @@ var common = {
         {
             // Set the file contents
             file.setContent(content);
-            Logger.log("Updated file: " + filename);
+            Logger.log(`Updated file: ${filename}`);
         }
         return file;
     },
 
-    // Find file in folder, and delete it
-    deleteFile: function(parentDir, filename)
+    /**
+     * Append content to a file
+     * 
+     * @param {string} parentDir - ID of the folder
+     * @param {string} filename - Name of the file
+     * @param {string} content - Content to append to file
+     * @returns {File}
+     */
+    appendOrCreateFile: function(parentDir, filename, newContent)
     {
-        // See if the indicated file is in the indicated Google Drive folder
-        var folder = DriveApp.getFolderById(parentDir);
-        var files = folder.getFilesByName(filename);
-        if (files.hasNext())
-        {
-            files.next().setTrashed(true);
-            Logger.log("Deleted file: " + filename);
-        }
+        var file = common.findOrCreateFile(parentDir, filename);
+
+        // Retrieve existing file content
+        var content = file.getBlob().getDataAsString();
+        content += newContent;
+
+        // Set the file contents
+        file.setContent(content);
+        Logger.log(`Updated file: ${filename}`);
+
+        return file;
     },
 
-    // Parse URL path parameters
+    /**
+     * Write a blob file
+     * 
+     * @param {string} parentDir - ID of the folder
+     * @param {string} filename - Name of the file
+     * @param {string} content - Content to write to file
+     * @returns {File}
+     */
+    updateOrCreateBlobFile: function(parentDir, filename, content)
+    {
+        // Start off by deleting any old file with the same name
+        common.deleteFile(parentDir, filename);
+
+        // Create a new file, with the new contents
+        var folder = DriveApp.getFolderById(parentDir);
+        var newFile = folder.createFile(content);
+        newFile.setName(filename);
+        Logger.log(`Updated file: ${filename}`);
+        return newFile;
+    },
+
+    /**
+     * Write JSON object to file as string
+     * 
+     * @param {string} parentDir - ID of the folder
+     * @param {string} filename - Name of the file
+     * @param {string} content - Content to write to file
+     * @returns {File}
+     */
+    updateOrCreateJsonFile: function(parentDir, filename, content)
+    {
+        let prettyContent = this.prettyPrintJson(content);
+        return this.updateOrCreateFile(parentDir, filename, prettyContent);
+    },
+
+    /**
+     * Retrieve given file content as JSON object
+     * 
+     * @param {File} file - The file to parse
+     * @returns {Object}
+     */
+    getJsonFileContent: function(file)
+    {
+        file = file.getAs("application/json");
+        return JSON.parse(file.getDataAsString());
+    },
+
+    /**
+     * Convert a JSON object or string into a formatted string
+     * 
+     * @param {Object|string} input - A raw JSON string or object
+     * @returns {string}
+     */
+    prettyPrintJson: function(input)
+    {
+        if (typeof input === "string")
+        {
+            input = JSON.parse(input);
+        }
+        return JSON.stringify(input, null, 4);
+    },
+
+    /**
+     * Parse a query string from a request object to extract a path parameter.
+     *
+     * @param {GoogleAppsScript.Events.DoGet} request - The request object.
+     * @returns {string}
+     */
     parsePathParameters: function(request)
     {
         // If there's only one parameter, just treat it as a path
@@ -96,56 +196,28 @@ var common = {
         return request.parameter.path || "";
     },
 
-    // Strip spaces, no-break spaces, zero-width spaces,
-    // & zero-width no-break spaces
+    /**
+     * Strip spaces, no-break spaces, zero-width spaces,
+     * & zero-width no-break spaces
+     * 
+     * @param {string} string - The string to trim.
+     * @returns {string}
+     */
     trim: function(string)
     {
         var pattern = /(^[\s\u00a0\u200b\uFEFF]+)|([\s\u00a0\u200b\uFEFF]+$)/g;
         return string.replace(pattern, "");
     },
 
-    // Retrieve text from inside XML tags
-    stripXml: function(input)
-    {
-        // Only parse input if it looks like it contains tags
-        if (input.match(/<[^>]*>/))
-        {
-            // Find where the tags start & end
-            var start = input.indexOf('<');
-            var end = input.lastIndexOf('>') + 1;
-
-            // Grab any text before all XML tags
-            var pre = input.slice(0, start);
-            // Grab any text after all XML tags
-            var post = input.slice(end);
-            var inside = "";
-
-            try
-            {
-                // Parse input without any pre or post text
-                var cleanInput = input.slice(start, end);
-
-                var doc = XmlService.parse(cleanInput);
-                inside = doc.getRootElement().getText();
-            }
-            catch (error)
-            {
-                Logger.log(input + " = " + error);
-            }
-
-            return pre + inside + post;
-        }
-        return input;
-    },
-
-    // Convert a JSON string to a pretty-print JSON string
-    prettyPrintJsonStr: function(input)
-    {
-        return JSON.stringify(JSON.parse(input), null, 4);
-    },
-
-    // Collate objects at given path, from array of JSON strings
-    collateArrays: function(path, objects)
+    /**
+     * Collate values from nested path, across array of JSON strings
+     * 
+     * @param {string} path - Dot-separated path to the desired property
+     * @param {string[]} objects - Array of JSON strings
+     * @param {boolean} [ignoreNulls=false] - Whether to filter out nulls
+     * @returns {Array} - Flattened array of collected values
+     */
+    collateArrays: function(path, objects, ignoreNulls = false)
     {
         var outArray = [];
         var chunks = path.split('.');
@@ -158,9 +230,75 @@ var common = {
             {
                 obj = obj[chunk];
             }
+
+            if (ignoreNulls)
+            {
+                obj = obj.filter((value) => value != null);
+            }
             outArray = outArray.concat(obj);
         }
 
         return outArray;
+    },
+
+    /**
+     * Collate unique values from nested path, across array of objects
+     * 
+     * @param {string} path - Dot-separated path to the desired property
+     * @param {Object[]} objects - Array of objects
+     * @param {boolean} [ignoreNulls=false] - Whether to filter out nulls
+     * @returns {Array} - Array of unique values found at that path
+     */
+    collateValues: function(path, objects, ignoreNulls = false)
+    {
+        var outArray = new Set();
+        var chunks = path.split('.');
+
+        // Iterate over each object
+        for (var obj of objects)
+        {
+            for (const chunk of chunks)
+            {
+                obj = obj[chunk];
+            }
+
+            if (ignoreNulls)
+            {
+                obj = obj.filter((value) => value != null);
+            }
+            outArray.add(obj);
+        }
+
+        return [...outArray];
+    },
+
+    /**
+     * Convert array into a map for counting occurrences
+     * 
+     * @param {Array} array - Array of keys
+     * @param {number} [defaultCount=0] - Initial count to assign to each key
+     * @returns {Map} - A map of keys with default counts
+     */
+    arrayToCountMap: function(array, defaultCount = 0)
+    {
+        var output = new Map();
+        array.forEach(element =>
+        {
+            output.set(element, defaultCount);
+        });
+        return output;
+    },
+
+    /**
+     * Convert UNIX timestamp to an ISO 8601 formatted date string
+     * 
+     * @param {number} seconds - Time since epoch (in seconds)
+     * @returns {string} - ISO 8601 formatted date string
+     */
+    epochToIso: function(seconds)
+    {
+        var date = new Date(0);
+        date.setUTCSeconds(seconds);
+        return date.toISOString();
     },
 };

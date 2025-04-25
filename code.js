@@ -41,9 +41,16 @@ function retrieveProfile()
     if (config.outputFormat.includes("rawJson") ||
         config.outputFormat.includes("json"))
     {
-        var profileData = JSON.stringify(data, null, 4);
-        common.updateOrCreateFile(config.backupDir, config.username + ".json", profileData);
+        common.updateOrCreateJsonFile(config.backupDir,
+            config.username + ".json", data);
     }
+
+    // Save CSV data to backup folder
+    // if (config.outputFormat.includes("csv"))
+    // {
+    //     var profileData = toCSV(data);
+    //     common.updateOrCreateFile(config.backupDir, config.username + ".csv", profileData);
+    // }
 }
 
 function retrieveFriends()
@@ -62,8 +69,7 @@ function retrieveFriends()
     if (config.outputFormat.includes("rawJson") ||
         config.outputFormat.includes("json"))
     {
-        var friendsData = JSON.stringify(data, null, 4);
-        common.updateOrCreateFile(config.backupDir, "friends.json", friendsData);
+        common.updateOrCreateJsonFile(config.backupDir, "friends.json", data);
     }
 }
 
@@ -82,8 +88,8 @@ function retrieveLovedTracks()
     // Save raw data to backup folder
     if (config.outputFormat.includes("rawJson"))
     {
-        var rawData = JSON.stringify(data, null, 4);
-        common.updateOrCreateFile(config.backupDir, "lovedTracks.raw.json", rawData);
+        common.updateOrCreateJsonFile(config.backupDir, "lovedTracks.raw.json",
+            data);
     }
 
     if (config.outputFormat.includes("json"))
@@ -99,8 +105,8 @@ function retrieveLovedTracks()
         });
 
         // Save to backup folder
-        var prettyData = JSON.stringify(filteredData, null, 4);
-        common.updateOrCreateFile(config.backupDir, "lovedTracks.json", prettyData);
+        common.updateOrCreateJsonFile(config.backupDir, "lovedTracks.json",
+            filteredData);
     }
 }
 
@@ -116,8 +122,8 @@ function retrieveTopTracks()
     // Save raw data to backup folder
     if (config.outputFormat.includes("rawJson"))
     {
-        var rawData = common.prettyPrintJsonStr(data);
-        common.updateOrCreateFile(config.backupDir, "topTracks.raw.json", rawData);
+        common.updateOrCreateJsonFile(config.backupDir, "topTracks.raw.json",
+            data);
     }
 
     if (config.outputFormat.includes("json"))
@@ -133,8 +139,8 @@ function retrieveTopTracks()
         });
 
         // Save to backup folder
-        var prettyData = JSON.stringify(filteredData, null, 4);
-        common.updateOrCreateFile(config.backupDir, "topTracks.json", prettyData);
+        common.updateOrCreateJsonFile(config.backupDir, "topTracks.json",
+            filteredData);
     }
 }
 
@@ -150,8 +156,8 @@ function retrieveTopArtists()
     // Save raw data to backup folder
     if (config.outputFormat.includes("rawJson"))
     {
-        var rawData = common.prettyPrintJsonStr(data);
-        common.updateOrCreateFile(config.backupDir, "topArtists.raw.json", rawData);
+        common.updateOrCreateJsonFile(config.backupDir, "topArtists.raw.json",
+            data);
     }
 
     if (config.outputFormat.includes("json"))
@@ -166,8 +172,8 @@ function retrieveTopArtists()
         });
 
         // Save to backup folder
-        var prettyData = JSON.stringify(filteredData, null, 4);
-        common.updateOrCreateFile(config.backupDir, "topArtists.json", prettyData);
+        common.updateOrCreateJsonFile(config.backupDir, "topArtists.json",
+            filteredData);
     }
 }
 
@@ -183,8 +189,8 @@ function retrieveTopAlbums()
     // Save raw data to backup folder
     if (config.outputFormat.includes("rawJson"))
     {
-        var rawData = common.prettyPrintJsonStr(data);
-        common.updateOrCreateFile(config.backupDir, "topAlbums.raw.json", rawData);
+        common.updateOrCreateJsonFile(config.backupDir, "topAlbums.raw.json",
+            data);
     }
 
     if (config.outputFormat.includes("json"))
@@ -200,8 +206,8 @@ function retrieveTopAlbums()
         });
 
         // Save to backup folder
-        var prettyData = JSON.stringify(filteredData, null, 4);
-        common.updateOrCreateFile(config.backupDir, "topAlbums.json", prettyData);
+        common.updateOrCreateJsonFile(config.backupDir, "topAlbums.json",
+            filteredData);
     }
 }
 
@@ -217,8 +223,8 @@ function retrieveTopTags()
     // Save raw data to backup folder
     if (config.outputFormat.includes("rawJson"))
     {
-        var rawData = common.prettyPrintJsonStr(data);
-        common.updateOrCreateFile(config.backupDir, "topTags.raw.json", rawData);
+        common.updateOrCreateJsonFile(config.backupDir, "topTags.raw.json",
+            data);
     }
 
     if (config.outputFormat.includes("json"))
@@ -233,8 +239,8 @@ function retrieveTopTags()
         });
 
         // Save to backup folder
-        var prettyData = JSON.stringify(filteredData, null, 4);
-        common.updateOrCreateFile(config.backupDir, "topTags.json", prettyData);
+        common.updateOrCreateJsonFile(config.backupDir, "topTags.json",
+            filteredData);
     }
 }
 
@@ -254,8 +260,8 @@ function retrieveScrobbles()
     // Save raw data to backup folder
     if (config.outputFormat.includes("rawJson"))
     {
-        var rawData = JSON.stringify(data, null, 4);
-        common.updateOrCreateFile(config.backupDir, "scrobbles.raw.json", rawData);
+        common.updateOrCreateJsonFile(config.backupDir, "scrobbles.raw.json",
+            data);
     }
 
     if (config.outputFormat.includes("json"))
@@ -285,8 +291,8 @@ function retrieveScrobbles()
         });
 
         // Save to backup folder
-        var prettyData = JSON.stringify(filteredData, null, 4);
-        common.updateOrCreateFile(config.backupDir, "scrobbles.json", prettyData);
+        common.updateOrCreateJsonFile(config.backupDir, "scrobbles.json",
+            filteredData);
     }
 }
 
