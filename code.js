@@ -322,7 +322,7 @@ function main()
     // Don't do anything if there's no output formats
     if (config.outputFormat.length < 1)
     {
-        return;
+        throw new Error("No output formats specified. Update config file, and try again.");
     }
 
     getPersonalInfo();
